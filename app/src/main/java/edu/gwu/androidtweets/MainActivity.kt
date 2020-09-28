@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Tells Android which layout file should be used for this screen.
         setContentView(R.layout.activity_main)
 
@@ -61,6 +60,8 @@ class MainActivity : AppCompatActivity() {
             // 1st param == a "Context" which is a reference point into the Android system. All Activities are Contexts by inheritance.
             // 2nd param == the Class-type of the Activity you want to navigate to.
             val intent = Intent(this, TweetsActivity::class.java)
+            intent.putExtra("LOCATION", "Richmond")
+
             startActivity(intent)
         }
 
