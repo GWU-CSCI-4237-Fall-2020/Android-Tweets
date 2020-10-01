@@ -1,6 +1,8 @@
 package edu.gwu.androidtweets
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val sharedPrefs: SharedPreferences = getSharedPreferences("android-tweets", Context.MODE_PRIVATE)
+
         // Tells Android which layout file should be used for this screen.
         setContentView(R.layout.activity_main)
 
@@ -57,10 +61,17 @@ class MainActivity : AppCompatActivity() {
             // Android-version of a println
             Log.d("MainActivity", "onClick")
 
+            sharedPrefs
+                .edit()
+                .putString("SAVED_USERNAME", username.text.toString())
+                .apply()
+
             // An Intent is used to start a new Activity
             // 1st param == a "Context" which is a reference point into the Android system. All Activities are Contexts by inheritance.
             // 2nd param == the Class-type of the Activity you want to navigate to.
             val intent = Intent(this, TweetsActivity::class.java)
+            intent.putExtra("LOCATION", "Richmond")
+
             startActivity(intent)
         }
 
@@ -89,5 +100,8 @@ class MainActivity : AppCompatActivity() {
         // Using the same TextWatcher instance for both EditTexts so the same block of code runs on each character.
         username.addTextChangedListener(textWatcher)
         password.addTextChangedListener(textWatcher)
+
+        val savedUsername = sharedPrefs.getString("SAVED_USERNAME", "")
+        username.setText(savedUsername)
     }
 }
