@@ -4,4 +4,5 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="tweets_title">Android Tweets near %1$s</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
