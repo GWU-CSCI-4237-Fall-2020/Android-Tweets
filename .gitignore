@@ -84,3 +84,8 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 lint/reports/
+
+# Generally you *would* have this uncommented so that the key it not checked into GitHub.
+# However, I *will* be checking my key into GitHub so students can run the lecture app without a
+# Google Cloud Project set up.
+# google_maps_api.xml
