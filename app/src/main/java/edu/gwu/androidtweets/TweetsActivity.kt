@@ -1,9 +1,14 @@
 package edu.gwu.androidtweets
 
+import android.location.Address
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.jetbrains.anko.doAsync
+import java.lang.Exception
 
 class TweetsActivity : AppCompatActivity() {
 
@@ -14,17 +19,36 @@ class TweetsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_tweets)
 
         val intent = getIntent()
-        val locationName = intent.getStringExtra("LOCATION")
-        val localizedString = getString(R.string.tweets_title, locationName)
+        val address: Address = intent.getParcelableExtra<Address>("address")!!
+        val city = address.locality ?: "Unknown"
+
+        val localizedString = getString(R.string.tweets_title, city)
         setTitle(localizedString)
 
         recyclerView = findViewById(R.id.recyclerView)
 
-        val fakeTweets = getFakeTweets()
-        val adapter = TweetsAdapter(fakeTweets)
+        doAsync {
+            val twitterManager = TwitterManager()
+            try {
+                val tweets = twitterManager.retrieveTweets(
+                    latitude = address.latitude,
+                    longitude = address.longitude
+                )
+                val adapter = TweetsAdapter(tweets)
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this) // Sets list scroll direction
+                runOnUiThread {
+                    recyclerView.adapter = adapter
+                    recyclerView.layoutManager = LinearLayoutManager(this@TweetsActivity)
+                }
+            } catch (exception: Exception) {
+                // OkHttp's execute() function will throw an Exception upon connectivity issues (or errors making the request)
+                Log.e("TweetsActivity", "Retrieving Tweets failed", exception)
+                runOnUiThread {
+                    Toast.makeText(this@TweetsActivity, "Failed to retrieve Tweets!", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
     }
 
     fun getFakeTweets(): List<Tweet> {
