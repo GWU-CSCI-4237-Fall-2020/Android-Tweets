@@ -1,5 +1,6 @@
 package edu.gwu.androidtweets
 
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
@@ -76,6 +77,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         mMap.animateCamera(
                             CameraUpdateFactory.newLatLng(coords)
                         )
+
+                        val intent = Intent(this@MapsActivity, TweetsActivity::class.java)
+                        intent.putExtra("address", firstResult)
+                        startActivity(intent)
                     } else {
                         Log.e("MapsActivity", "Geocoding failed or returned no results")
                         Toast.makeText(
