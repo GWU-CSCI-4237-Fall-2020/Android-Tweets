@@ -25,6 +25,7 @@ class TwitterManager {
 
         val request: Request = Request.Builder()
             .url("https://api.twitter.com/1.1/search/tweets.json?q=$searchTerm&geocode=$latitude,$longitude,$radius")
+            // This header is required for Twitter's API (we'll learn about it in Lecture 7)
             .header("Authorization", "Bearer AAAAAAAAAAAAAAAAAAAAAJ6N8QAAAAAABppHnTpssd0Hrsdpsi6vYN%2BTfks%3DFY1iVemJdKF5HWRZhQnHRbGpwXJevg3sYyvYC3R53sHCfOJvFk")
             .get()
             .build()
