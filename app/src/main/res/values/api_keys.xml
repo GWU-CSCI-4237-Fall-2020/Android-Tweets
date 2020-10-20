@@ -1,0 +1,8 @@
+<resources>
+    <!--
+    Generally you would NOT check your API keys into GitHub, but I'm doing it to allow the students
+    to use the lecture app without getting their own keys.
+    -->
+    <string name="twitter_api_key">LKpWIufRxmjNcY0IIByRUnTv4</string>
+    <string name="twitter_api_secret">5Pf8IuotGcHrizVgptMIYd8b6HyQLcompcy3YwT8ZALmOsjwA4</string>
+</resources>

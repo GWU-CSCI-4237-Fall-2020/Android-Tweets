@@ -5,7 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 class TweetsAdapter(val tweets: List<Tweet>) : RecyclerView.Adapter<TweetsAdapter.ViewHolder>() {
 
@@ -27,6 +29,7 @@ class TweetsAdapter(val tweets: List<Tweet>) : RecyclerView.Adapter<TweetsAdapte
         // Layout inflation (read & parse XML file and return a reference to the root layout)
         val layoutInflater: LayoutInflater = LayoutInflater.from(parent.context)
         val itemView: View = layoutInflater.inflate(R.layout.row_tweet, parent, false)
+        val x: ConstraintLayout
         return ViewHolder(itemView)
     }
 
@@ -42,6 +45,13 @@ class TweetsAdapter(val tweets: List<Tweet>) : RecyclerView.Adapter<TweetsAdapte
         holder.handle.text = currentTweet.handle
         holder.content.text = currentTweet.content
 
-        // TODO: Show profile picture (future lecture)
+        if (currentTweet.iconUrl.isNotEmpty()) {
+            // Useful to see the caching in action
+            // Picasso.get().setIndicatorsEnabled(true)
+
+            Picasso.get()
+                .load(currentTweet.iconUrl)
+                .into(holder.icon)
+        }
     }
 }
