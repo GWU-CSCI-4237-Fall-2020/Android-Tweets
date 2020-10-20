@@ -6,6 +6,7 @@ import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -20,10 +21,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
 
+    private lateinit var confirm: Button
+
+    private var currentAddress: Address? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        confirm = findViewById(R.id.confirm)
+        confirm.setOnClickListener {
+            if (currentAddress != null) {
+                val intent = Intent(this@MapsActivity, TweetsActivity::class.java)
+                intent.putExtra("address", currentAddress)
+                startActivity(intent)
+            }
+        }
+        confirm.isEnabled = false
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -78,9 +95,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             CameraUpdateFactory.newLatLng(coords)
                         )
 
-                        val intent = Intent(this@MapsActivity, TweetsActivity::class.java)
-                        intent.putExtra("address", firstResult)
-                        startActivity(intent)
+                        updateConfirmButton(firstResult)
                     } else {
                         Log.e("MapsActivity", "Geocoding failed or returned no results")
                         Toast.makeText(
@@ -92,5 +107,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+    }
+
+    /**
+     * Flips the button color from red --> green and updates the icon
+     */
+    private fun updateConfirmButton(address: Address) {
+        val greenColor = getColor(R.color.buttonGreen)
+        val checkIcon = getDrawable(R.drawable.ic_baseline_check_24)
+
+        confirm.setBackgroundColor(greenColor)
+        confirm.setCompoundDrawablesWithIntrinsicBounds(checkIcon, null, null, null)
+        confirm.text = address.getAddressLine(0)
+        confirm.isEnabled = true
+
+        currentAddress = address
     }
 }

@@ -30,7 +30,16 @@ class TweetsActivity : AppCompatActivity() {
         doAsync {
             val twitterManager = TwitterManager()
             try {
+                val apiKey = getString(R.string.twitter_api_key)
+                val apiSecret = getString(R.string.twitter_api_secret)
+
+                val oAuthToken = twitterManager.retrieveOAuthToken(
+                    apiKey = apiKey,
+                    apiSecret = apiSecret
+                )
+
                 val tweets = twitterManager.retrieveTweets(
+                    oAuthToken = oAuthToken,
                     latitude = address.latitude,
                     longitude = address.longitude
                 )
