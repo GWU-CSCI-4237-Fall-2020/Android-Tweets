@@ -79,6 +79,8 @@ class MainActivity : AppCompatActivity() {
                     // The "task" object represents whether the Firebase action was successful for not
                     // (i.e. were we able to log the user in successfully)
                     if (task.isSuccessful) {
+                        // We're forcing non-null here (!!) because we've already established the user has logged in
+                        // successfully, so the currentUser is guaranteed to be non-null
                         val user: FirebaseUser = firebaseAuth.currentUser!!
                         val email = user.email
                         Toast.makeText(
@@ -120,6 +122,9 @@ class MainActivity : AppCompatActivity() {
                     // The "task" object represents whether the Firebase action was successful for not
                     // (i.e. were we able to register the user successfully)
                     if (task.isSuccessful) {
+                        // We're forcing non-null here (!!) because we've already established the user has registered
+                        // successfully, so the currentUser is guaranteed to be non-null.
+                        // Firebase auto-logs the user in upon successful registration.
                         val user: FirebaseUser = firebaseAuth.currentUser!!
                         val email = user.email
                         Toast.makeText(

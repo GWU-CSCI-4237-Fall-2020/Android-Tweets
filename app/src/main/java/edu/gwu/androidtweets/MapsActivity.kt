@@ -33,6 +33,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_maps)
 
         firebaseAuth = FirebaseAuth.getInstance()
+
+        // We're forcing non-null here (!!) because we've already established the user has logged in
+        // successfully, otherwise they wouldn't be able to get to this screen
+        // so the currentUser is guaranteed to be non-null.
         title = getString(R.string.maps_title, firebaseAuth.currentUser!!.email)
 
         confirm = findViewById(R.id.confirm)
