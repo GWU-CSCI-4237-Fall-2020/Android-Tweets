@@ -12,8 +12,10 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import com.google.android.gms.tasks.Task
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +42,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     /**
      * onCreate is called the first time the Activity is to be shown to the user, so it a good spot
      * to put initialization logic.
@@ -53,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         // The IDs we are using here should match what was set in the "id" field for our views
         // in our XML layout (which was specified by setContentView).
@@ -76,9 +81,13 @@ class MainActivity : AppCompatActivity() {
             firebaseAuth
                 .signInWithEmailAndPassword(inputtedUsername, inputtedPassword)
                 .addOnCompleteListener { task ->
+
                     // The "task" object represents whether the Firebase action was successful for not
                     // (i.e. were we able to log the user in successfully)
                     if (task.isSuccessful) {
+
+                        firebaseAnalytics.logEvent("login_success", null)
+
                         // We're forcing non-null here (!!) because we've already established the user has logged in
                         // successfully, so the currentUser is guaranteed to be non-null
                         val user: FirebaseUser = firebaseAuth.currentUser!!
@@ -101,6 +110,16 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
                     } else {
                         val exception = task.exception
+
+                        val reason: String = if (exception is FirebaseAuthInvalidCredentialsException)
+                            "invalid_credentials"
+                        else
+                            "generic_failure"
+
+                        val bundle: Bundle = Bundle()
+                        bundle.putString("error_type", reason)
+
+                        firebaseAnalytics.logEvent("login_failed", bundle)
 
                         // We could also check the specific subtype of the Exception to display more targeted error messages
                         Toast.makeText(
