@@ -1,8 +1,13 @@
 package edu.gwu.androidtweets
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.location.Address
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -11,12 +16,16 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
 import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -55,6 +64,8 @@ class MainActivity : AppCompatActivity() {
 
         // Tells Android which layout file should be used for this screen.
         setContentView(R.layout.activity_main)
+
+        createNotificationsChannel()
 
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
@@ -141,6 +152,8 @@ class MainActivity : AppCompatActivity() {
                     // The "task" object represents whether the Firebase action was successful for not
                     // (i.e. were we able to register the user successfully)
                     if (task.isSuccessful) {
+                        showNewUserNotification()
+
                         // We're forcing non-null here (!!) because we've already established the user has registered
                         // successfully, so the currentUser is guaranteed to be non-null.
                         // Firebase auto-logs the user in upon successful registration.
@@ -193,5 +206,52 @@ class MainActivity : AppCompatActivity() {
 
         val savedUsername = sharedPrefs.getString("SAVED_USERNAME", "")
         username.setText(savedUsername)
+    }
+
+    private fun createNotificationsChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val title = "Default Notifications"
+            val description = "The app's default notification set"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+            val channel = NotificationChannel("default", title, importance)
+            channel.description = description
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun showNewUserNotification() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+
+        val address = Address(Locale.US)
+        address.setAddressLine(0, "Richmond")
+        address.locality = "Richmond"
+        address.latitude = 37.5407
+        address.longitude = -77.4360
+
+        val tweetsIntent = Intent(this, TweetsActivity::class.java)
+        tweetsIntent.putExtra("address", address)
+
+        val tweetsPendingIntentBuilder = TaskStackBuilder.create(this)
+        tweetsPendingIntentBuilder.addNextIntentWithParentStack(tweetsIntent)
+
+        val tweetsPendingIntent = tweetsPendingIntentBuilder.getPendingIntent(0, 0)
+
+        val builder = NotificationCompat.Builder(this, "default")
+        builder
+            .setSmallIcon(R.drawable.ic_baseline_check_24)
+            .setContentTitle("Android Tweets")
+            .setContentText("Welcome to Android Tweets!")
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .addAction(0, "Go to Virginia", tweetsPendingIntent)
+
+        NotificationManagerCompat.from(this).notify(0, builder.build())
+
     }
 }
