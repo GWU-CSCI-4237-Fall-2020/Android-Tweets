@@ -3,6 +3,7 @@ package edu.gwu.androidtweets
 import android.location.Address
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,8 @@ class TweetsActivity : AppCompatActivity() {
 
     private lateinit var firebaseDatabase: FirebaseDatabase
 
+    private val currentTweets: MutableList<Tweet> = mutableListOf()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweets)
@@ -40,7 +43,24 @@ class TweetsActivity : AppCompatActivity() {
         addTweet = findViewById(R.id.add_tweet)
         tweetContent = findViewById(R.id.tweet_content)
 
-        getTweetsFromFirebase(address)
+        if (savedInstanceState != null) {
+            // Restoring from a screen rotation / configuration change
+            val savedTweets = savedInstanceState.getSerializable("TWEETS") as List<Tweet>
+            currentTweets.addAll(savedTweets)
+
+            val adapter = TweetsAdapter(currentTweets)
+            recyclerView.adapter = adapter
+            recyclerView.layoutManager = LinearLayoutManager(this@TweetsActivity)
+        } else {
+            // This is the first time the activity is being launched
+            // getTweetsFromFirebase(address)
+            getTweetsFromTwitter(address)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable("TWEETS", ArrayList(currentTweets))
     }
 
     private fun getTweetsFromFirebase(address: Address) {
@@ -88,6 +108,9 @@ class TweetsActivity : AppCompatActivity() {
     }
 
     private fun getTweetsFromTwitter(address: Address) {
+        addTweet.hide()
+        tweetContent.visibility = View.GONE
+
         val city = address.locality ?: "Unknown"
         val localizedString = getString(R.string.tweets_title, city)
         setTitle(localizedString)
@@ -109,6 +132,9 @@ class TweetsActivity : AppCompatActivity() {
                     longitude = address.longitude
                 )
                 val adapter = TweetsAdapter(tweets)
+
+                currentTweets.clear()
+                currentTweets.addAll(tweets)
 
                 runOnUiThread {
                     recyclerView.adapter = adapter
