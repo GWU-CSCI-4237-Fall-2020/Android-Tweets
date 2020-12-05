@@ -7,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.AuthResult
@@ -44,6 +46,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
+    private lateinit var shakeManager: ShakeManager
+
     /**
      * onCreate is called the first time the Activity is to be shown to the user, so it a good spot
      * to put initialization logic.
@@ -52,6 +56,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val sharedPrefs: SharedPreferences = getSharedPreferences("android-tweets", Context.MODE_PRIVATE)
+
+        shakeManager = ShakeManager(this)
 
         // Tells Android which layout file should be used for this screen.
         setContentView(R.layout.activity_main)
@@ -106,7 +112,12 @@ class MainActivity : AppCompatActivity() {
                         // An Intent is used to start a new Activity
                         // 1st param == a "Context" which is a reference point into the Android system. All Activities are Contexts by inheritance.
                         // 2nd param == the Class-type of the Activity you want to navigate to.
+                        var coords = mutableListOf<LatLng>()
+                        coords.add(LatLng(1.0, 2.0))
                         val intent = Intent(this, MapsActivity::class.java)
+                        intent.putExtra("coords", ArrayList(coords))
+
+                        val coords2: List<LatLng> = intent.getParcelableArrayListExtra<LatLng>("coords")!!.toList()
                         startActivity(intent)
                     } else {
                         val exception = task.exception
@@ -187,11 +198,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+
+
         // Using the same TextWatcher instance for both EditTexts so the same block of code runs on each character.
         username.addTextChangedListener(textWatcher)
         password.addTextChangedListener(textWatcher)
 
         val savedUsername = sharedPrefs.getString("SAVED_USERNAME", "")
         username.setText(savedUsername)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        shakeManager.detectShakes {
+            Log.d("MainActivity", "Shake detected!")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        shakeManager.stopDetectingShakes()
     }
 }
